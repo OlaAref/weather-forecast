@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS weather_db;
+    USE weather_db;
+    CREATE USER 'weatherApp'@'%' IDENTIFIED BY 'password';
+    GRANT ALL PRIVILEGES ON weather_db.* TO 'weatherApp'@'%';
+    FLUSH PRIVILEGES;
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+#            - name: MYSQL_USER
+#              value: root
+            - name: MYSQL_ALLOW_EMPTY_PASSWORD
+              value: "yes"
+#            - name: MYSQL_ROOT_PASSWORD
+#              value: password
+            - name: MYSQL_DATABASE
+              value: weather_db
+          volumeMounts:
+            - name: mysql-init
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: mysql-init
+          configMap:
+            name: mysql-init
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  labels:
+    name: mysql
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+      protocol: TCP
+  selector:
+    app: mysql

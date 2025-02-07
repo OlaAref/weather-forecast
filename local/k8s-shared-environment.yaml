@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shared-environment
+  namespace: default
+data:
+  SPRING_PROFILE: local
+  SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/weather_db
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: shared-environment
+type: Opaque

@@ -1,0 +1,29 @@
+# Tiltfile
+
+update_settings(max_parallel_updates=3)
+
+k8s_yaml([
+    'k8s-mysql.yaml',\
+    'k8s-shared-environment.yaml'
+    ])
+k8s_resource(workload='mysql', port_forwards=3306)
+
+for service in [
+    'weather'
+]:
+
+    image_name = 'olaaref/%s' %(service)
+    jib_context = '../services/%s' %(service)
+    # MacOs Command
+    #jib_command = 'mvn clean compile jib:dockerBuild -Dimage=$EXPECTED_REF'
+    # Windows Command
+    jib_command = 'mvn clean compile jib:dockerBuild -Dimage=%EXPECTED_REF%'
+    k8s_local_yaml = '%s/k8s-local.yaml' %(jib_context)
+
+    custom_build(
+        ref=image_name,
+        command=jib_command,
+        dir=jib_context,
+        deps=['%s/src' %(jib_context), '%s/pom.xml' %(jib_context)]
+    )
+    k8s_yaml([k8s_local_yaml])
