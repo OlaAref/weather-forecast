@@ -8,11 +8,12 @@
         <version>3.4.2</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.olaaref</groupId>
+    <groupId>com.olaaref.weather</groupId>
     <artifactId>common-lib</artifactId>
     <version>1.0.0</version>
     <name>common-lib</name>
     <description>common-lib</description>
+    <packaging>jar</packaging>
     <url/>
     <licenses>
         <license/>
