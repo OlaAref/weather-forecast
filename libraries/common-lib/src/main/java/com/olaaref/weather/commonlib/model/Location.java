@@ -1,5 +1,7 @@
 package com.olaaref.weather.commonlib.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.olaaref.weather.commonlib.dto.LocationDto;
 import jakarta.persistence.*;
 
 @Entity
@@ -36,11 +38,16 @@ public record Location(
         @Column(name = "ENABLED")
         boolean enabled,
 
+        @JsonIgnore
         @Column(name = "TRASHED")
         boolean trashed
 ) {
     //add a default constructor to make JPA happy
     public Location() {
         this(null, null, null, null, null, 0.0, 0.0, null, null, true, false);
+    }
+
+    public LocationDto toLocationDto() {
+        return new LocationDto(code(), countryCode(), countryName(), regionName(), cityName(), latitude(), longitude(), zipCode(), timeZone(), enabled(), trashed());
     }
 }
