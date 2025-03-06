@@ -3,36 +3,24 @@
 update_settings(max_parallel_updates=3)
 
 k8s_yaml([
-    'k8s-mysql.yaml',\
+    'k8s-mysql.yaml',
     'k8s-shared-environment.yaml'
     ])
 k8s_resource(workload='mysql', port_forwards=3306)
-
-for library in [
-    'common-lib'
-]:
-
-    lib_context = '../libraries/%s' %(library)
-    lib_command = 'mvn clean install'
-
-    local(command=lib_command, dir=lib_context)
 
 for service in [
     'weather'
 ]:
 
     image_name = 'olaaref/%s' %(service)
-    jib_context = '../services/%s' %(service)
-    # MacOs Command
-    #jib_command = 'mvn clean compile jib:dockerBuild -Dimage=$EXPECTED_REF'
-    # Windows Command
-    jib_command = 'mvn clean compile jib:dockerBuild -X -Dimage=%EXPECTED_REF%'
-    k8s_local_yaml = '%s/k8s-local.yaml' %(jib_context)
+    docker_context = '../'
+    dockerfile = '../services/%s/Dockerfile' %(service)
+    k8s_local_yaml = '../services/%s/k8s-local.yaml' %(service)
+    src = '../services/%s/src' %(service)
+    pom = '../services/%s/pom.xml' %(service)
 
-    custom_build(
-        ref=image_name,
-        command=jib_command,
-        dir=jib_context,
-        deps=['%s/src' %(jib_context), '%s/pom.xml' %(jib_context)]
-    )
+    sync_src = sync(src, '/src')
+    sync_pom = sync(pom, '/pom.xml')
+    docker_build(image_name, context=docker_context, dockerfile=dockerfile, live_update=[sync_src, sync_pom])
+
     k8s_yaml([k8s_local_yaml])
