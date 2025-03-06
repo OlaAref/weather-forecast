@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @SpringBootApplication
-@EntityScan(basePackages = {"com.olaaref.commonlib.model"})
+@EntityScan(basePackages = "com.olaaref.weather.commonlib.model")
 public class WeatherApplication {
 
     public static void main(String[] args) {
