@@ -48,30 +48,23 @@ public class LocationController {
     }
 
     @GetMapping("/{code}")
-    public ResponseEntity<LocationDto> getLocationByCode(@PathVariable String code) {
+    public ResponseEntity<LocationDto> getLocationByCode(@PathVariable String code) throws LocationNotFoundException {
         Optional<Location> location = locationService.getLocationByCode(code);
-        return location
-                .map(value -> ResponseEntity.ok(value.toLocationDto()))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        if(location.isPresent()) {
+            return ResponseEntity.ok(location.get().toLocationDto());
+        }
+        throw new LocationNotFoundException("Location with code " + code + " not found");
     }
 
     @PutMapping
-    public ResponseEntity<LocationDto> updateLocation(@RequestBody @Valid LocationDto locationDto) {
-        try {
-            Location updateLocation = locationService.updateLocation(locationDto);
-            return ResponseEntity.ok(updateLocation.toLocationDto());
-        } catch (LocationNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<LocationDto> updateLocation(@RequestBody @Valid LocationDto locationDto) throws LocationNotFoundException {
+        Location updateLocation = locationService.updateLocation(locationDto);
+        return ResponseEntity.ok(updateLocation.toLocationDto());
     }
 
     @DeleteMapping("/{code}")
-    public ResponseEntity<LocationDto> deleteLocation(@PathVariable String code) {
-        try {
-            locationService.trashLocation(code);
-            return ResponseEntity.noContent().build();
-        } catch (LocationNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<LocationDto> deleteLocation(@PathVariable String code) throws LocationNotFoundException {
+        locationService.trashLocation(code);
+        return ResponseEntity.noContent().build();
     }
 }
