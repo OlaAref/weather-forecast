@@ -14,8 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.lang.reflect.Method;
 import java.time.Duration;
+
+import static com.olaaref.weather.aop.logger.util.LoggerUtil.isExceptionIgnored;
 
 public class LogAfterService {
 
@@ -47,7 +48,8 @@ public class LogAfterService {
         Level level = getLoggingLevel(logAfterAnnotation.level(), isAfterThrowing);
         Logger logger = LoggerUtil.getLogger(logAfterAnnotation.declaringClass(), joinPoint);
 
-        if(isLoggingLevelDisabled(logger, level) || isIgnoredException(exception, logAfterAnnotation.ignoreExceptions())) {
+        if(isLoggingLevelDisabled(logger, level)
+                || isExceptionIgnored(exception, logAfterAnnotation.ignoreExceptions(), aopLoggersProperties)) {
             logElapsed(startTime);
             return;
         }
@@ -56,24 +58,6 @@ public class LogAfterService {
 
         logMessage(joinPoint, level, logAfterAnnotation, logger, stringLookup, returnValue, exception, isAfterThrowing);
         logElapsed(startTime);
-    }
-
-    private boolean isIgnoredException(Throwable exception, Class<? extends Throwable>[] annotationIgnoredExceptions) {
-        if(exception == null) return false;
-
-        return matchIgnoreExceptions(exception, annotationIgnoredExceptions)
-                || matchIgnoreExceptions(exception, aopLoggersProperties.getIgnoreExceptions());
-    }
-
-    private boolean matchIgnoreExceptions(Throwable exception, Class<? extends Throwable>[] ignoredExceptions) {
-        if(ignoredExceptions == null) return false;
-
-        for(Class<? extends Throwable> ignoredException : ignoredExceptions){
-            if(ignoredException == null) continue;
-            if(ignoredException.isAssignableFrom(exception.getClass())) return true;
-        }
-
-        return false;
     }
 
     private void logMessage(

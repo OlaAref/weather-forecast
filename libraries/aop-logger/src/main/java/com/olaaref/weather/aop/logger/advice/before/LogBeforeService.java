@@ -1,6 +1,5 @@
 package com.olaaref.weather.aop.logger.advice.before;
 
-import com.olaaref.weather.aop.logger.annotation.DoNotLog;
 import com.olaaref.weather.aop.logger.enums.Level;
 import com.olaaref.weather.aop.logger.properties.AopLoggersProperties;
 import com.olaaref.weather.aop.logger.template.interpolation.lookup.StringSupplierLookup;
@@ -8,12 +7,10 @@ import com.olaaref.weather.aop.logger.template.interpolation.registrar.JoinPoint
 import com.olaaref.weather.aop.logger.template.interpolation.substitutor.StringSubstitutor;
 import com.olaaref.weather.aop.logger.util.LoggerUtil;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.Objects;
 

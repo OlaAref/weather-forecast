@@ -29,7 +29,7 @@ public class LogAfterAdvice {
     }
 
     @AfterReturning(
-            value = "publicMethod() && !toStringMethod() && logAfterMethodContext(logAfter)",
+            value = "publicMethod() && logAfterMethodContext(logAfter)",
             argNames = "joinPoint, logAfter, returnValue",
             returning = "returnValue")
     void logAfterReturningMethodContext(
