@@ -19,13 +19,13 @@ public class LogAroundAdvice {
     void toStringMethod(){}
 
     @Pointcut(
-            value = "@annotation(LogAround)",
+            value = "@annotation(logAround)",
             argNames = "logAround"
     )
     void logAroundMethodContext(final LogAround logAround){}
 
     @Pointcut(
-            value = "@within(LogAround)",
+            value = "@within(logAround)",
             argNames = "logAround"
     )
     void logAroundClassContext(final LogAround logAround){}
