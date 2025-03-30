@@ -12,6 +12,7 @@
 
 	<modules>
 		<module>libraries/common-lib</module>
+		<module>libraries/aop-logger</module>
 		<module>services/weather</module>
 	</modules>
 
