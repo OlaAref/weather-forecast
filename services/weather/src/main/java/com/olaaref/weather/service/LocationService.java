@@ -1,5 +1,6 @@
 package com.olaaref.weather.service;
 
+import com.olaaref.weather.aop.logger.advice.around.LogAround;
 import com.olaaref.weather.commonlib.dto.LocationDto;
 import com.olaaref.weather.commonlib.model.Location;
 import com.olaaref.weather.exception.LocationNotFoundException;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+@LogAround
 @Service
 public class LocationService {
 
