@@ -2,6 +2,7 @@ package com.olaaref.weather.service;
 
 import com.olaaref.weather.commonlib.dto.LocationDto;
 import com.olaaref.weather.commonlib.model.Location;
+import com.olaaref.weather.exception.LocationNotFoundException;
 import com.olaaref.weather.repository.LocationRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -110,6 +112,124 @@ class LocationServiceTest {
         assertFalse(result.isPresent());
         verify(locationRepository, times(1)).findByCodeAndTrashed("US-CA-LA", false);
     }
+    
+    @DisplayName("Update existing location")
+    @Test
+    void updateLocation_WhenLocationExists_ShouldUpdateAndReturnLocation() throws LocationNotFoundException {
+        // Given
+        String locationCode = "US-CA-LA";
+        LocationDto updatedLocationDto = LocationDto.builder()
+                .code(locationCode)
+                .countryCode("US")
+                .countryName("United States")
+                .regionName("California")
+                .cityName("Los Angeles Updated")
+                .latitude(34.052235)
+                .longitude(-118.243683)
+                .zipCode("90002")
+                .timeZone("America/Los_Angeles")
+                .enabled(true)
+                .trashed(false)
+                .build();
+                
+        Location existingLocation = getValidLocationDto().toLocationEntity();
+        Location updatedLocation = updatedLocationDto.toLocationEntity();
+        
+        when(locationRepository.findByCodeAndTrashed(locationCode, false))
+                .thenReturn(Optional.of(existingLocation));
+        when(locationRepository.save(any(Location.class))).thenReturn(updatedLocation);
+        
+        // When
+        Location result = locationService.updateLocation(updatedLocationDto);
+        
+        // Then
+        assertNotNull(result);
+        assertEquals("Los Angeles Updated", result.getCityName());
+        assertEquals("90002", result.getZipCode());
+        verify(locationRepository, times(1)).findByCodeAndTrashed(locationCode, false);
+        verify(locationRepository, times(1)).save(any(Location.class));
+    }
+    
+    @DisplayName("Update non-existing location")
+    @Test
+    void updateLocation_WhenLocationDoesNotExist_ShouldReturnEmpty() throws LocationNotFoundException {
+        // Given
+        String locationCode = "INVALID-CODE";
+        LocationDto locationDto = LocationDto.builder()
+                .code(locationCode)
+                .countryCode("US")
+                .countryName("United States")
+                .regionName("California")
+                .cityName("Los Angeles")
+                .build();
+                
+        when(locationRepository.findByCodeAndTrashed(locationCode, false))
+                .thenReturn(Optional.empty());
+        
+        // When
+        Location result = locationService.updateLocation(locationDto);
+        
+        // Then
+        assertNull(result);
+        verify(locationRepository, times(1)).findByCodeAndTrashed(locationCode, false);
+        verify(locationRepository, never()).save(any(Location.class));
+    }
+    
+    @DisplayName("Delete location by code when exists")
+    @Test
+    void deleteLocation_WhenLocationExists_ShouldTrashLocationAndReturnTrue() throws LocationNotFoundException {
+        // Given
+        String locationCode = "US-CA-LA";
+        Location location = getValidLocationDto().toLocationEntity();
+        
+        when(locationRepository.findByCodeAndTrashed(locationCode, false))
+                .thenReturn(Optional.of(location));
+        when(locationRepository.save(any(Location.class))).thenReturn(location);
+        
+        // When
+        locationService.trashLocation(locationCode);
+        
+        // Then
+        assertTrue(location.isTrashed());
+        verify(locationRepository, times(1)).findByCodeAndTrashed(locationCode, false);
+        verify(locationRepository, times(1)).save(location);
+    }
+    
+    @DisplayName("Delete location by code when not exists")
+    @Test
+    void deleteLocation_WhenLocationDoesNotExist_ShouldReturnFalse() throws LocationNotFoundException {
+        // Given
+        String locationCode = "INVALID-CODE";
+        
+        when(locationRepository.findByCodeAndTrashed(locationCode, false))
+                .thenReturn(Optional.empty());
+        
+        // When
+        locationService.trashLocation(locationCode);
+        
+        // Then
+        verify(locationRepository, times(1)).findByCodeAndTrashed(locationCode, false);
+        verify(locationRepository, never()).save(any(Location.class));
+    }
+
+    @DisplayName("Save invalid location")
+    @Test
+    void saveInvalidLocation_ShouldThrowException() {
+        // Given
+        LocationDto invalidLocationDto = LocationDto.builder()
+                .code("")  // Invalid empty code
+                .countryCode("US")
+                .countryName("United States")
+                .build();
+                
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> {
+            locationService.saveLocation(invalidLocationDto);
+        });
+        
+        verify(locationRepository, never()).save(any(Location.class));
+    }
+
     private LocationDto getValidLocationDto() {
         return LocationDto.builder()
                 .code("US-CA-LA")

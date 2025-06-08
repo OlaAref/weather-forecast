@@ -2,14 +2,12 @@ package com.olaaref.weather.commonlib.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.olaaref.weather.commonlib.dto.LocationDto;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Getter
 @Setter
 @ToString
@@ -50,6 +48,30 @@ public class Location {
     @JsonIgnore
     @Column(name = "TRASHED")
     private boolean trashed;
+
+    /**
+     * @PrimaryKeyJoinColumn: This annotation is used to specify that the primary key of the associated entity (RealtimeWeather) is the same as the primary key of the owning entity (Location).
+     * It is used to establish a one-to-one relationship between the two entities based on the shared primary key.
+     */
+    @ToString.Exclude
+    @JsonIgnore
+    @OneToOne(mappedBy = "location", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private RealtimeWeather realtimeWeather;
+
+    public Location(String code, String countryCode, String countryName, String regionName, String cityName, double latitude, double longitude, String zipCode, String timeZone, boolean enabled, boolean trashed) {
+        this.code = code;
+        this.countryCode = countryCode;
+        this.countryName = countryName;
+        this.regionName = regionName;
+        this.cityName = cityName;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.zipCode = zipCode;
+        this.timeZone = timeZone;
+        this.enabled = enabled;
+        this.trashed = trashed;
+    }
 
     public LocationDto toLocationDto() {
         return new LocationDto(code, countryCode, countryName, regionName, cityName, latitude, longitude, zipCode, timeZone, enabled, trashed);
